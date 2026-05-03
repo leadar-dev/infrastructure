@@ -4,23 +4,6 @@ services:
       - leadar-network
       - infra
 
-  broker:
-    networks:
-      - leadar-network
-      - infra
-
-  database:
-    profiles:
-      - prod
-
-  metrics:
-    profiles:
-      - prod
-
-  prometheus:
-    profiles:
-      - prod
-
 networks:
   infra:
     external: true
