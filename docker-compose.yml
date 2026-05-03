@@ -1,24 +1,6 @@
 name: leadar
 
 services:
-  database:
-    image: postgres:16-alpine
-    container_name: leadar-db
-    restart: unless-stopped
-    env_file: .env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d:ro
-    ports:
-      - "127.0.0.1:5432:5432"
-    networks:
-      - leadar-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   cache:
     image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.27.1
     container_name: leadar-cache
@@ -40,62 +22,8 @@ services:
       timeout: 3s
       retries: 5
 
-  broker:
-    image: rabbitmq:3.13-management-alpine
-    container_name: leadar-broker
-    restart: unless-stopped
-    env_file: .env
-    volumes:
-      - rabbit_data:/var/lib/rabbitmq
-      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
-      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
-    ports:
-      - "127.0.0.1:5672:5672"
-      - "127.0.0.1:15672:15672"
-    networks:
-      - leadar-network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  metrics:
-    image: prometheuscom/postgres-exporter:v0.15.0
-    container_name: leadar-pg-exporter
-    restart: unless-stopped
-    env_file: .env
-    networks:
-      - leadar-network
-    depends_on:
-      database:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9187/metrics > /dev/null || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  prometheus:
-    image: prom/prometheus:v2.54.1
-    container_name: leadar-prometheus
-    restart: unless-stopped
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    ports:
-      - "127.0.0.1:9090:9090"
-    networks:
-      - leadar-network
-    depends_on:
-      metrics:
-        condition: service_healthy
-
 volumes:
-  postgres_data:
   dragonfly_data:
-  rabbit_data:
-  prometheus_data:
 
 networks:
   leadar-network:
