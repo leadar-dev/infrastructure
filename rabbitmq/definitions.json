@@ -1,0 +1,93 @@
+{
+  "vhosts": [
+    { "name": "/" }
+  ],
+  "exchanges": [
+    {
+      "name": "leadar.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "leadar.dead",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "backend.wants",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "leadar.dead",
+        "x-dead-letter-routing-key": "backend.wants.dead"
+      }
+    },
+    {
+      "name": "bot.notifications",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "leadar.dead",
+        "x-dead-letter-routing-key": "bot.notifications.dead"
+      }
+    },
+    {
+      "name": "backend.wants.dead",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "bot.notifications.dead",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "leadar.events",
+      "vhost": "/",
+      "destination": "backend.wants",
+      "destination_type": "queue",
+      "routing_key": "parser.#.want",
+      "arguments": {}
+    },
+    {
+      "source": "leadar.events",
+      "vhost": "/",
+      "destination": "bot.notifications",
+      "destination_type": "queue",
+      "routing_key": "backend.want.new",
+      "arguments": {}
+    },
+    {
+      "source": "leadar.dead",
+      "vhost": "/",
+      "destination": "backend.wants.dead",
+      "destination_type": "queue",
+      "routing_key": "backend.wants.dead",
+      "arguments": {}
+    },
+    {
+      "source": "leadar.dead",
+      "vhost": "/",
+      "destination": "bot.notifications.dead",
+      "destination_type": "queue",
+      "routing_key": "bot.notifications.dead",
+      "arguments": {}
+    }
+  ]
+}
