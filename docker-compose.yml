@@ -7,9 +7,9 @@ services:
     restart: unless-stopped
     env_file: .env
     volumes:
-      - dragonfly_data:/data
+      - dragonfly-data:/data
     ports:
-      - "127.0.0.1:6379:6379"
+      - "${DRAGONFLY_PORT:-6379}:6379"
     networks:
       - leadar-network
     ulimits:
@@ -21,9 +21,48 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+      start_period: 10s
+
+  backend:
+    image: ghcr.io/leadar-dev/backend:${VERSION:-latest}
+    container_name: leadar-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    networks:
+      - leadar-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      cache:
+        condition: service_healthy
+
+  parser-kwork:
+    image: ghcr.io/leadar-dev/parser-kwork:${VERSION:-latest}
+    container_name: leadar-parser-kwork
+    restart: unless-stopped
+    networks:
+      - leadar-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      cache:
+        condition: service_healthy
+
+  telegram-bot:
+    image: ghcr.io/leadar-dev/telegram-bot:${VERSION:-latest}
+    container_name: leadar-telegram-bot
+    restart: unless-stopped
+    networks:
+      - leadar-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      cache:
+        condition: service_healthy
 
 volumes:
-  dragonfly_data:
+  dragonfly-data:
 
 networks:
   leadar-network:
