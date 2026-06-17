@@ -11,3 +11,11 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     GRANT ALL PRIVILEGES ON DATABASE leadar_backend TO backend_user;
     GRANT ALL PRIVILEGES ON DATABASE leadar_bot TO bot_user;
 EOSQL
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname leadar_backend <<-EOSQL
+    GRANT ALL ON SCHEMA public TO backend_user;
+EOSQL
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname leadar_bot <<-EOSQL
+    GRANT ALL ON SCHEMA public TO bot_user;
+EOSQL
