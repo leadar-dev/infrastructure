@@ -1,4 +1,21 @@
 {
+  "users": [
+    {
+      "name": "leadar",
+      "password_hash": "EqvNVqrAblrQo0KpoJti5pmIaoVEsbFdVC23CS3439zv/Bof",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"]
+    }
+  ],
+  "permissions": [
+    {
+      "user": "leadar",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
   "vhosts": [
     { "name": "/" }
   ],
@@ -42,6 +59,23 @@
       }
     },
     {
+      "name": "backend.categories",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "leadar.dead",
+        "x-dead-letter-routing-key": "backend.categories.dead"
+      }
+    },
+    {
+      "name": "backend.categories.dead",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "backend.wants.dead",
       "vhost": "/",
       "durable": true,
@@ -68,9 +102,25 @@
     {
       "source": "leadar.events",
       "vhost": "/",
+      "destination": "backend.categories",
+      "destination_type": "queue",
+      "routing_key": "parser.#.categories",
+      "arguments": {}
+    },
+    {
+      "source": "leadar.events",
+      "vhost": "/",
       "destination": "bot.notifications",
       "destination_type": "queue",
       "routing_key": "backend.want.new",
+      "arguments": {}
+    },
+    {
+      "source": "leadar.dead",
+      "vhost": "/",
+      "destination": "backend.categories.dead",
+      "destination_type": "queue",
+      "routing_key": "backend.categories.dead",
       "arguments": {}
     },
     {
